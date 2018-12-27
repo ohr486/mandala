@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    mandala (0.1.0)
+    mandala (0.0.1)
       thor
 
 GEM
