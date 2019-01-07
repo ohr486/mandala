@@ -2,4 +2,4 @@
 
 require "mandala"
 
-MandalaUtils.start
+Mandala::CLI.start
