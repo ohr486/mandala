@@ -1,7 +1,9 @@
 ---
 sudo: false
 language: ruby
+bundler_args: "--without development --deployment -j4"
 cache: bundler
 rvm:
-  - 2.5.3
+  - 2.6.1
 before_install: gem install bundler -v 1.17.2
+script: bundle exec rspec
