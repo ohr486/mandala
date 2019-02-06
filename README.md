@@ -1,5 +1,8 @@
 # Mandala
 
+[![Build Status](https://travis-ci.org/ohr486/mandala.svg?branch=develop)](https://travis-ci.org/ohr486/mandala)
+[![codecov](https://codecov.io/gh/ohr486/mandala/branch/develop/graph/badge.svg)](https://codecov.io/gh/ohr486/mandala)
+
 Mandala is Serverless Ruby WAF.
 
 ## Installation
