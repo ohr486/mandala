@@ -12,3 +12,6 @@
 
 # for mac
 .DS_Store
+
+# for ide
+.idel
