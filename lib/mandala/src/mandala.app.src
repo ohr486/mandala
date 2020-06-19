@@ -1,0 +1,9 @@
+{application, mandala,
+[{description, "mandala"},
+ {vsn, ""},
+ {modules, ""},
+ {registered, []},
+ {applications, [kernel,stdlib,compiler]},
+ {mod, {mandala,[]}},
+ {env, []}
+]}.
