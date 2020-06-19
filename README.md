@@ -3,23 +3,7 @@
 [![Build Status](https://travis-ci.org/ohr486/mandala.svg?branch=develop)](https://travis-ci.org/ohr486/mandala)
 [![codecov](https://codecov.io/gh/ohr486/mandala/branch/develop/graph/badge.svg)](https://codecov.io/gh/ohr486/mandala)
 
-Mandala is Serverless Ruby WAF.
-
-## Installation
-
-Install gem.
-
-```ruby
-gem 'mandala'
-```
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install mandala
+Mandala
 
 ## Usage
 
