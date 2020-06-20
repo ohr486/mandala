@@ -1,3 +1,6 @@
+-define(key(M, K), maps:get(K, M)).
+-define(line(Opts), mandala_utils:get_line(Opts)).
+
 -record(mandala_tokenizer, {
   file=(<<"nofile">>),
   terminators=[],

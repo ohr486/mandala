@@ -2,7 +2,7 @@
 -behaviour(application).
 
 %% Application callbacks
--export([start/2, stop/1, 'string_to_quoted!'/5]).
+-export([start/2, stop/1, 'string_to_quoted!'/5, eval_forms/3]).
 
 %%%===================================================================
 %%% Application callbacks
@@ -32,7 +32,6 @@ stop(Tab) ->
 %%--------------------------------------------------------------------
 'string_to_quoted!'(String, StartLine, StartColumn, File, Opts) ->
   case string_to_tokens(String, StartLine, StartColumn, File, Opts) of
-
     {ok, Tokens} ->
       case tokens_to_quoted(Tokens, File, Opts) of
         {ok, Forms} ->
@@ -103,6 +102,31 @@ parser_line(Meta) ->
   case lists:keyfind(line, 1, Meta) of
     {line, L} -> L;
     false -> 0
+  end.
+
+%%--------------------------------------------------------------------
+eval_forms(Tree, Binding, Opts) when is_list(Opts) ->
+  eval_forms(Tree, Binding, env_for_eval(Opts));
+eval_forms(Tree, RawBinding, OE) ->
+  {Vars, Binding} = normalize_binding(RawBinding, [], []),
+  E = elixir_env:with_vars(OE, Vars),
+  {_, S} = elixir_env:env_to_scope(E),
+  {Erl, NewE, NewS} = quoted_to_erl(Tree, E, S),
+
+  case Erl of
+    {atom, _, Atom} ->
+      {Atom, Binding, NewE};
+
+    _  ->
+      Exprs =
+        case Erl of
+          {block, _, BlockExprs} -> BlockExprs;
+          _ -> [Erl]
+        end,
+
+      ErlBinding = elixir_erl_var:load_binding(Binding, E, S),
+      {value, Value, NewBinding} = recur_eval(Exprs, ErlBinding, NewE),
+      {Value, elixir_erl_var:dump_binding(NewBinding, NewE, NewS), NewE}
   end.
 
 %%%===================================================================
