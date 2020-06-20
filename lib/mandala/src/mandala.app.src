@@ -1,9 +1,10 @@
 {application, mandala,
-[{description, "mandala"},
- {vsn, ""},
- {modules, ""},
- {registered, []},
- {applications, [kernel,stdlib,compiler]},
- {mod, {mandala,[]}},
- {env, []}
-]}.
+ [{description, "mandala"},
+  {vsn, "###REPLACE###"},
+  {modules, "###REPLACE###"},
+  {registered, [mandala_sup, mandala_config, mandala_code_server]},
+  {applications, [kernel,stdlib,compiler]},
+  {mod, {mandala,[]}},
+  {env, []}
+ ]
+}.

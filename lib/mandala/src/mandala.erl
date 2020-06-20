@@ -16,17 +16,19 @@
   {ok, pid(), State :: term()} |
   {error, Reason :: term()}).
 start(_StartType, _StartArgs) ->
-  case 'TopSupervisor':start_link() of
-    {ok, Pid} ->
-      {ok, Pid};
-    Error ->
+  Tab = mandala_config:new([]),
+  case mandala_sup:start_link() of
+    {ok, Sup} ->
+      {ok, Sup, Tab};
+    {error, _Reason} = Error ->
+      mandala_config:delete(Tab),
       Error
   end.
 
 %%--------------------------------------------------------------------
--spec(stop(State :: term()) -> term()).
-stop(_State) ->
-  ok.
+-spec(stop(Tab :: term()) -> term()).
+stop(Tab) ->
+  mandala_config:delete(Tab).
 
 %%%===================================================================
 %%% Internal functions
