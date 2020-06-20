@@ -2,6 +2,9 @@
 erl_crash.dump
 /lib/*/ebin/
 
+# for parser
+lib/mandala/src/mandala_parser.erl
+
 # for mac
 .DS_Store
 

@@ -7,6 +7,7 @@ ERL_MAKE := erl -make
 GEN_APP := $(CURDIR)/lib/mandala/gen_app.escript
 
 APP := lib/mandala/ebin/mandala.app
+PARSER := lib/mandala/src/mandala_parser.erl
 KERNEL := lib/mandala/ebin/Mandala.Kernel.beam
 
 default: clean compile
@@ -14,9 +15,12 @@ default: clean compile
 compile: erlang $(APP) mandala
 	$(QUIET) echo "=> make: compile"
 
-erlang:
+erlang: $(PARSER)
 	$(QUIET) echo "=> make: erlang"
 	$(QUIET) cd lib/mandala && mkdir -p ebin && $(ERL_MAKE)
+
+$(PARSER): lib/mandala/src/mandala_parser.yrl
+	$(QUIET) erlc -o $@ +'{verbose,true}' +'{report,true}' $<
 
 $(APP): lib/mandala/src/mandala.app.src lib/mandala/ebin $(GEN_APP)
 	$(QUIET) echo "=> make: {APP}"
@@ -37,4 +41,5 @@ $(KERNEL): lib/mandala/lib/*.mdl
 clean:
 	$(QUIET) echo "=> make: clean"
 	rm -rf lib/*/ebin
+	rm -rf lib/mandala/src/mandala_parser.erl
 	rm -rf erl_crash.dump

@@ -1,7 +1,7 @@
 -module(mandala_config).
 -behaviour(gen_server).
 
--export([new/1, delete/1]).
+-export([new/1, delete/1, get/1, get/2, put/2]).
 -export([start_link/0, init/1, handle_call/3, handle_cast/2]).
 
 -define(SERVER, ?MODULE).
@@ -35,6 +35,21 @@ new(Opts) ->
 
 delete(?MODULE) ->
   ets:delete(?MODULE).
+
+get(Key) ->
+  [{_, Value}] = ets:lookup(?MODULE, Key),
+  Value.
+
+get(Key, Default) ->
+  try ets:lookup(?MODULE, Key) of
+    [{_, Value}] -> Value;
+    [] -> Default
+  catch
+    _:_ -> Default
+  end.
+
+put(Key, Value) ->
+  gen_server:call(?MODULE, {put, Key, Value}).
 
 %%%===================================================================
 %%% Internal functions

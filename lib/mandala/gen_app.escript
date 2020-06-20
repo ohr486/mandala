@@ -17,7 +17,7 @@ main([Source, Target, Version]) ->
   Props = lists:keyreplace(vsn, 1, Props1, {vsn, Version}),
   % io:format("Props: ~p~n", [Props]),
 
-  App = io_lib:format("~tp.~n", [{application, Name, Props}]),
+  App = io_lib:format("~p.~n", [{application, Name, Props}]),
   ok = file:write_file(Target, App),
-  io:format("==> Generated: ~ts~n", [Target]).
+  io:format("==> Generated: ~p~n", [Target]).
 
