@@ -1,28 +1,36 @@
 -module(mandala_config).
+-compile({no_auto_import, [get/1]}).
 -behaviour(gen_server).
 
--export([new/1, delete/1, get/1, get/2, put/2]).
+-export([new/1, delete/1, put/2, get/1, get/2, update/2, get_and_put/2]).
 -export([start_link/0, init/1, handle_call/3, handle_cast/2]).
-
--define(SERVER, ?MODULE).
-
--record(mandala_config_state, {}).
 
 %%%===================================================================
 %%% Spawning and gen_server implementation
 %%%===================================================================
 
 start_link() ->
-  gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+  gen_server:start_link({local, ?MODULE}, ?MODULE, ?MODULE, []).
 
-init([]) ->
-  {ok, #mandala_config_state{}}.
+init(Tab) ->
+  {ok, Tab}.
 
-handle_call(_Request, _From, State = #mandala_config_state{}) ->
-  {reply, ok, State}.
+handle_call({put, Key, Value}, _From, Tab) ->
+  ets:insert(Tab, {Key, Value}),
+  {reply, ok, Tab};
 
-handle_cast(_Request, State = #mandala_config_state{}) ->
-  {noreply, State}.
+handle_call({update, Key, Fun}, _From, Tab) ->
+  Value = Fun(get(Key)),
+  ets:insert(Tab, {Key, Value}),
+  {reply, Value, Tab};
+
+handle_call({get_and_put, Key, Value}, _From, Tab) ->
+  OldValue = get(Key),
+  ets:insert(Tab, {Key, Value}),
+  {noreply, Tab}.
+
+handle_cast(Cast, Tab) ->
+  {stop, {bad_cast, Cast}, Tab}.
 
 %%%===================================================================
 %%% Export functions
@@ -50,6 +58,12 @@ get(Key, Default) ->
 
 put(Key, Value) ->
   gen_server:call(?MODULE, {put, Key, Value}).
+
+get_and_put(Key, Value) ->
+  gen_server:call(?MODULE, {get_and_put, Key, Value}).
+
+update(Key, Fun) ->
+  gen_server:call(?MODULE, {update, Key, Fun}).
 
 %%%===================================================================
 %%% Internal functions

@@ -1,4 +1,5 @@
 -module(mandala).
+-include("mandala.hrl").
 -behaviour(application).
 
 %% Application callbacks
@@ -109,8 +110,8 @@ eval_forms(Tree, Binding, Opts) when is_list(Opts) ->
   eval_forms(Tree, Binding, env_for_eval(Opts));
 eval_forms(Tree, RawBinding, OE) ->
   {Vars, Binding} = normalize_binding(RawBinding, [], []),
-  E = elixir_env:with_vars(OE, Vars),
-  {_, S} = elixir_env:env_to_scope(E),
+  E = mandala_env:with_vars(OE, Vars),
+  {_, S} = mandala_env:env_to_scope(E),
   {Erl, NewE, NewS} = quoted_to_erl(Tree, E, S),
 
   case Erl of
@@ -124,10 +125,80 @@ eval_forms(Tree, RawBinding, OE) ->
           _ -> [Erl]
         end,
 
-      ErlBinding = elixir_erl_var:load_binding(Binding, E, S),
+      ErlBinding = mandala_erl_var:load_binding(Binding, E, S),
       {value, Value, NewBinding} = recur_eval(Exprs, ErlBinding, NewE),
-      {Value, elixir_erl_var:dump_binding(NewBinding, NewE, NewS), NewE}
+      {Value, mandala_erl_var:dump_binding(NewBinding, NewE, NewS), NewE}
   end.
+
+%%--------------------------------------------------------------------
+env_for_eval(Opts) ->
+  env_for_eval(mandala_env:new(), Opts).
+
+env_for_eval(Env, _Opts) ->
+  % Line
+  % File
+  % Aliases
+  % Requires
+  % Functions
+  % Macros
+  % Module
+  % Tracers
+  % LexicalTracker
+  % FA
+  % Env
+  Env#{
+  }.
+
+%%--------------------------------------------------------------------
+normalize_binding([{Key, Value} | Binding], Vars, Acc) when is_atom(Key) ->
+  normalize_binding(Binding, [{Key, nil} | Vars], [{{Key, nil}, Value} | Acc]);
+normalize_binding([{Pair, Value} | Binding], Vars, Acc) ->
+  normalize_binding(Binding, [Pair | Vars], [{Pair, Value} | Acc]);
+normalize_binding([], Vars, Acc) ->
+  {Vars, Acc}.
+
+%%--------------------------------------------------------------------
+quoted_to_erl(Quoted, Env, Scope) ->
+  {Expanded, NewEnv} = mandala_expand:expand(Quoted, Env),
+  {Erl, NewScope} = mandala_erl_pass:translate(Expanded, Scope),
+  {Erl, NewEnv, NewScope}.
+
+%%--------------------------------------------------------------------
+recur_eval([Expr | Exprs], Binding, Env) ->
+  {value, Value, NewBinding} =
+    try
+      erl_eval:expr(Expr, Binding, none, none, none)
+    catch Class:Exception:Stacktrace
+      -> erlang:raise(
+        Class,
+        rewrite_exception(Exception, Stacktrace, Expr, Env),
+        rewrite_stacktrace(Stacktrace))
+    end,
+  case Exprs of
+    [] -> {value, Value, NewBinding};
+    _ -> recur_eval(Exprs, NewBinding, Env)
+  end.
+
+%%--------------------------------------------------------------------
+rewrite_exception(Other, _, _, _) ->
+  Other.
+
+%%--------------------------------------------------------------------
+rewrite_stacktrace(Stacktrace) ->
+  {current_stacktrace, CurrentStack}
+    = erlang:process_info(self(), current_stacktrace),
+  merge_stacktrace(Stacktrace, tl(CurrentStack)).
+
+%%--------------------------------------------------------------------
+merge_stacktrace([], CurrentStack) ->
+  CurrentStack;
+merge_stacktrace(CurrentStack, CurrentStack) ->
+  CurrentStack;
+merge_stacktrace([StackItem | Stacktrace], CurrentStack) ->
+  [StackItem | merge_stacktrace(Stacktrace, CurrentStack)].
+
+
+
 
 %%%===================================================================
 %%% Internal functions

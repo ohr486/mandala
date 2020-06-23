@@ -6,6 +6,7 @@
 
 bootstrap() ->
   {ok, _} = application:ensure_all_started(mandala),
+  mandala_config:put(parser_options, []),
   {Init, Main} = bootstrap_files(),
   [bootstrap_file(File) || File <- [<<"lib/mandala/lib/kernel.mdl">> | Init]],
   [bootstrap_file(File) || File <- [<<"lib/mandala/lib/kernel.mdl">> | Main]].
@@ -26,7 +27,7 @@ bootstrap_file(File) ->
   try
     Lists = file(filename:absname(File), fun(_, _) -> ok end),
     _ = [binary_to_path(X, "lib/mandala/ebin") || X <- Lists],
-    io:format("Compiled: ~p~n", [File])
+    io:format("Compiled: ~ts~n", [File])
   catch
     Kind:Reason:Stacktrace ->
       io:format("~p: ~p~nstacktrace: ~p~n", [Kind, Reason, Stacktrace]),
