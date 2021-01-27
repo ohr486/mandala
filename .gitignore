@@ -9,8 +9,8 @@ lib/mandala/src/mandala_parser.erl
 .DS_Store
 
 # for ide
-.idel
 .idea
+.vscode
 
 # for editor
 *~
